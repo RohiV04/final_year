@@ -86,22 +86,129 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
     <style>
-    .stTabs {
-        background-color: #f0f2f6;
-        padding: 20px;
-        border-radius: 10px;
+    /* Main theme colors */
+    :root {
+        --primary-color: #6C5CE7;
+        --secondary-color: #A8A4E3;
+        --background-color: #F8F9FA;
+        --text-color: #2D3436;
+        --accent-color: #81ECEC;
     }
-    .stTab {
-        background-color: white;
-        border-radius: 5px;
-        padding: 10px;
-        margin: 5px;
+
+    /* Global styles */
+    .stApp {
+        background-color: var(--background-color);
+        color: var(--text-color);
     }
-    .search-container {
+
+    /* Sidebar styling */
+    .css-1d391kg {
         background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 1rem;
+        background-color: transparent;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        height: 3rem;
+        background-color: white;
+        border-radius: 0.5rem;
+        gap: 0.5rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: var(--accent-color);
+        color: var(--text-color);
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    /* Container styling */
+    .content-container {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin: 1rem 0;
+    }
+
+    /* Input styling */
+    .stTextInput input, .stTextArea textarea {
+        background-color: #F1F3F4;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px var(--secondary-color);
+    }
+
+    /* Button styling */
+    .stButton button {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 0.5rem 2rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .stButton button:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    /* Radio button styling */
+    .stRadio [data-testid="stMarkdownContainer"] > div {
+        background-color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* Slider styling */
+    .stSlider [data-testid="stThumbValue"] {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    /* Success/Error message styling */
+    .stSuccess, .stError {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
+
+    /* Image container styling */
+    .stImage {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .stImage:hover {
+        transform: scale(1.02);
+    }
+
+    /* Footer styling */
+    footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+        text-align: center;
+        color: var(--text-color);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -124,7 +231,6 @@ with tabs[0]:
     search_type = st.radio("Search Type", ["Text", "Image"], horizontal=True)
     
     with st.container():
-        # st.markdown('<div class="search-container">', unsafe_allow_html=True)
         if search_type == "Text":
             query = st.text_input("Enter your search query", placeholder="Try 'Golden Retriever'")
             search_button = st.button("🔍 Search", key="text_search")
@@ -168,7 +274,6 @@ with tabs[1]:
     st.markdown("Generate unique images using OpenAI's DALL-E model!")
     
     with st.container():
-        # st.markdown('<div class="search-container">', unsafe_allow_html=True)
         prompt = st.text_area("Enter your image prompt", 
                             placeholder="A serene landscape with mountains reflecting in a crystal clear lake at sunset",
                             height=100)
@@ -184,4 +289,4 @@ with tabs[1]:
 
 # Footer
 st.markdown("---")
-st.markdown("Built with ❤️ using OpenAI, CLIP, and Streamlit")
+# st.markdown('<footer>Built with ❤️ using OpenAI, CLIP, and Streamlit</footer>', unsafe_allow_html=True)
