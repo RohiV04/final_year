@@ -1,3 +1,9 @@
-gradio
 qdrant-client
-sentence-transformer
+open_clip_torch
+torch
+torchvision
+Pillow
+streamlit
+requests
+openai
+python-dotenv
