@@ -9,6 +9,7 @@ from io import BytesIO
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 import json
+import hashlib
 
 # Load environment variables
 load_dotenv()
@@ -56,22 +57,61 @@ def search_images(query, count):
         query_vector = encode_image(query)
         
     results = qdrant_client.search(
+        # collection_name="midjourney",
         collection_name="images",
         query_vector=query_vector.tolist(),
         with_payload=True,
         limit=count
     )
+    print(f"Search results: {results}")
     return results
 
+def store_image_in_qdrant(image_url, prompt):
+    """Store image in Qdrant with its embeddings"""
+    try:
+        # Download and encode the image
+        response = requests.get(image_url)
+        image = Image.open(BytesIO(response.content))
+        image_vector = encode_image(image)
+        
+        # Create a unique ID for the image
+        image_id = int(hashlib.md5(image_url.encode()).hexdigest()[:8], 16)
+        
+        # Store in Qdrant
+        qdrant_client.upsert(
+            # collection_name="midjourney",
+            collection_name="images",
+            points=[
+                {
+                    "id": image_id,
+                    "vector": image_vector.tolist(),
+                    "payload": {
+                        "url": image_url,
+                        "prompt": prompt,
+                        "type": "generated"
+                    }
+                }
+            ]
+        )
+        return True
+    except Exception as e:
+        st.error(f"Error storing image in Qdrant: {str(e)}")
+        return False
+
 def generate_image(prompt):
-    """Generate image using DALL-E"""
+    """Generate image using DALL-E and store in Qdrant"""
     try:
         result = azure_client.images.generate(
             model="dall-e-3",
             prompt=prompt,
             n=1
         )
-        return json.loads(result.model_dump_json())['data'][0]['url']
+        image_url = json.loads(result.model_dump_json())['data'][0]['url']
+        
+        # Store the generated image in Qdrant
+        if store_image_in_qdrant(image_url, prompt):
+            return image_url
+        return None
     except Exception as e:
         st.error(f"Error generating image: {str(e)}")
         return None
@@ -226,7 +266,7 @@ tabs = st.tabs(["🔍 Image Search", "🎨 Image Generation"])
 # Image Search Tab
 with tabs[0]:
     st.header("Multi-Modal Image Search")
-    st.markdown("Search through our image database using text or upload your own image!")
+    st.markdown("Search through our image and text database using text or upload your own image!")
     
     search_type = st.radio("Search Type", ["Text", "Image"], horizontal=True)
     
@@ -262,6 +302,7 @@ with tabs[0]:
                         with cols[idx % 4]:
                             try:
                                 response = requests.get(result.payload['url'])
+                                # response = requests.get(result.payload['image_url'])
                                 img = Image.open(BytesIO(response.content))
                                 st.image(img, use_container_width=True)
                             except Exception as e:
@@ -270,8 +311,8 @@ with tabs[0]:
 
 # Image Generation Tab
 with tabs[1]:
-    st.header("DALL-E Image Generation")
-    st.markdown("Generate unique images using OpenAI's DALL-E model!")
+    st.header("Image Generation")
+    st.markdown("Generate unique images!")
     
     with st.container():
         prompt = st.text_area("Enter your image prompt", 
