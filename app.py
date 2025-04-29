@@ -10,6 +10,7 @@ from openai import AzureOpenAI
 from dotenv import load_dotenv
 import json
 import hashlib
+from huggingface_hub import InferenceClient
 
 # Load environment variables
 load_dotenv()
@@ -32,6 +33,25 @@ azure_client = AzureOpenAI(
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
 )
+
+# Initialize Hugging Face Inference client
+hf_client = InferenceClient(
+    provider="hf-inference",
+    api_key=os.getenv("HUGGINGFACE_API_KEY"),
+)
+
+def image_with_stable_diffusion(prompt):
+    """Generate image using Stable Diffusion via Hugging Face Inference API"""
+    try:
+        # Generate image using the Inference API
+        image = hf_client.text_to_image(
+            prompt,
+            model="stabilityai/stable-diffusion-3.5-large"
+        )
+        return image
+    except Exception as e:
+        st.error(f"Error generating image with Stable Diffusion: {str(e)}")
+        return None
 
 def encode_text(text):
     """Encode text input using CLIP"""
@@ -113,7 +133,8 @@ def generate_image(prompt):
             return image_url
         return None
     except Exception as e:
-        st.error(f"Error generating image: {str(e)}")
+        print(e)
+        st.error(f"Error generating image Try again later")
         return None
 
 # Page configuration
@@ -322,6 +343,10 @@ with tabs[1]:
         
         if generate_button and prompt:
             with st.spinner("Generating your image..."):
+                # image = image_with_stable_diffusion(prompt)
+                # if image:
+                #     st.success("Image generated successfully!")
+                #     st.image(image, caption="Generated Image", use_container_width=True)
                 image_url = generate_image(prompt)
                 if image_url:
                     st.success("Image generated successfully!")

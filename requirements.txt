@@ -7,3 +7,4 @@ streamlit
 requests
 openai
 python-dotenv
+huggingface_hub
